@@ -1,22 +1,18 @@
-open System
-open System.Text.RegularExpressions
+let expns =
+    System.IO.File.ReadAllLines("Day01.txt")
+    |> Array.map int |> Array.toList
 
-let inline toChars (str: string) = str.ToCharArray() 
+let tuples lst n =
+    let rec tuples n tpls =
+        if n = 0 then tpls else
+            tuples (n - 1) (tpls |> Seq.collect (fun tpl ->
+                        lst |> Seq.map (fun e -> e::tpl)))
+    tuples n (Seq.singleton [])
 
-let expns = System.IO.File.ReadAllLines("Day01.txt") |> Array.map int
-let lst = expns.Length - 1
+let entries = tuples expns >> Seq.filter (List.sum >> ((=) 2020)) >> Seq.head
 
-let part1 =
-    [ for i in 0 .. lst do for j in i + 1 .. lst do
-        let a, b = expns.[i], expns.[j]
-        if a + b = 2020 then
-            (a * b) ].Head
-
-let part2 =
-    [ for i in 0 .. lst do for j in i + 1 .. lst do for k in j + 1 .. lst do
-        let a, b, c = expns.[i], expns.[j], expns.[k]
-        if a + b + c = 2020 then
-            (a * b * c) ].Head
+let part1 = entries 2 |> List.reduce (*)
+let part2 = entries 3 |> List.reduce (*)
 
 [<EntryPoint>]
 let main _ =

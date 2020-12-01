@@ -16,13 +16,13 @@ let rec pairCombos = function
     | head::tail ->
         List.map (fun e -> (head, e)) tail @ pairCombos tail
 
-let tuples lst n =
+let cartpower lst n =
     // aoc20:1
-    let rec tuples n tpls =
-        if n = 0 then tpls else
-        tuples (n - 1) (tpls |> Seq.collect (fun tpl ->
-                    lst |> Seq.map (fun e -> e::tpl)))
-    tuples n (Seq.singleton [])
+    let rec crtpwr n prd =
+        if n = 0 then prd else
+        crtpwr (n - 1) (prd |> Seq.collect (fun tpl ->
+            lst |> Seq.map (fun e -> e::tpl)))
+    crtpwr n (Seq.singleton [])
 
 let rec permutations list =
     // aoc15:13

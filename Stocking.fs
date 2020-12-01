@@ -11,10 +11,18 @@ let inline toHex (bs: byte[]) = Convert.ToHexString(bs).ToLower()
 let inline digitToInt (c: char) = int c - int '0'
 
 let rec pairCombos = function
-    // aoc18:02
+    // aoc18:2
     | [] | [_] -> []
     | head::tail ->
         List.map (fun e -> (head, e)) tail @ pairCombos tail
+
+let tuples lst n =
+    // aoc20:1
+    let rec tuples n tpls =
+        if n = 0 then tpls else
+        tuples (n - 1) (tpls |> Seq.collect (fun tpl ->
+                    lst |> Seq.map (fun e -> e::tpl)))
+    tuples n (Seq.singleton [])
 
 let rec permutations list =
     // aoc15:13
@@ -28,7 +36,7 @@ let rec permutations list =
 
 let adjcrds (x, y) width height =
     // aoc16:22
-    // [(x, y + 1); (x + 1, y + 1); (x + 1, y); (x + 1, y - 1); 
+    // [(x, y + 1); (x + 1, y + 1); (x + 1, y); (x + 1, y - 1);
     //  (x, y - 1); (x - 1, y - 1); (x - 1, y); (x - 1, y + 1)]
     [(x, y + 1); (x + 1, y); (x, y - 1); (x - 1, y)]
     |> List.filter (fun (x, y) -> 0 <= x && x < width && 0 <= y && y < height
@@ -53,4 +61,3 @@ let mapToString (map:Map<(int * int), int64>) =
             map.TryFind (xShift x, yShift y) |> valueAsChar))
     |> Array.map String
     |> String.concat nl
-

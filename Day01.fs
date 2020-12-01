@@ -5,8 +5,9 @@ let expns =
 let tuples lst n =
     let rec tuples n tpls =
         if n = 0 then tpls else
-            tuples (n - 1) (tpls |> Seq.collect (fun tpl ->
-                        lst |> Seq.map (fun e -> e::tpl)))
+        tuples
+            (n - 1)
+            (tpls |> Seq.collect (fun tpl -> lst |> Seq.map (fun e -> e::tpl)))
     tuples n (Seq.singleton [])
 
 let entries = tuples expns >> Seq.filter (List.sum >> ((=) 2020)) >> Seq.head

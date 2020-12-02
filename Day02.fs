@@ -11,7 +11,7 @@ let validDownTheStreet ((c, (mn, mx)), pwd) =
     mn <= n && n <= mx
 
 let validHere ((c, (mn, mx)), (pwd: string)) =
-    pwd.[mn - 1] = c = (pwd.[mx - 1] <> c)
+    (pwd.[mn - 1] = c) = (pwd.[mx - 1] <> c)
 
 let part1 = passwords |> List.filter validDownTheStreet |> List.length
 let part2 = passwords |> List.filter validHere |> List.length

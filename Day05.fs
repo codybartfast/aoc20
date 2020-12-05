@@ -1,32 +1,31 @@
 open System
-open System.Text.RegularExpressions
-
-let inline toChars (str: string) = str.ToCharArray()
 
 let lines = System.IO.File.ReadAllLines("Day05.txt") |> Array.toList
-let parse ln= ln
-let input = lines |> List.map parse
+let seat (ln: string) =
+    let toInt (chrs: char[]) = Convert.ToInt32(String chrs, 2)
+    let binChars =
+        ln.ToCharArray() |> Array.map (function 'F' | 'L' -> '0' | _ -> '1')
+    let row = binChars |> Array.take 7 |> toInt
+    let col = binChars |> Array.skip 7 |> toInt
+    (row, col)
+let seats = lines |> List.map seat
 
-let seat bpass =
-    let b = bpass |> toChars |> Array.map (function 'F' | 'L' -> '0' | _ -> '1')
-    let r =  b |> Array.take 7 |> String |> (fun s -> Convert.ToInt32(s, 2))
-    let s = b |> Array.skip 7 |> String |> (fun s -> Convert.ToInt32(s, 2))
-    (r, s)
+let seatId (r, c) = r * 8 + c
 
-let part1 =
-    input |> List.map (seat >> (fun (r, s) -> r * 8 + s)) |> List.max
+let part1 = seats |> List.map seatId |> List.max
 
-let hasgap (row, seats) =
-    let cols = seats |> List.map snd |> List.sort
-    (row, cols)
+let findTheGap (row, seats) =
+    let adjacent (c, c') = c + 1 = c'
+    let colPairs = seats |> List.map snd |> List.sort |> List.pairwise
+    match colPairs |> List.forall adjacent with
+    | true -> None
+    | false ->
+        colPairs
+        |> List.takeWhile adjacent
+        |> List.last
+        |> fun (_, c) -> Some (row, c + 1)
 
-let part2 =
-    input
-    |> List.map seat
-    |> List.groupBy fst
-    |> List.map hasgap
-    |> List.filter (snd >> List.length >> ((>) 8))
-    64 * 8 + 3
+let part2 = seats |> List.groupBy fst |> List.pick findTheGap |> seatId
 
 [<EntryPoint>]
 let main _ =

@@ -10,6 +10,8 @@ let inline encode (str: string) = System.Text.Encoding.ASCII.GetBytes(str)
 let inline toHex (bs: byte[]) = Convert.ToHexString(bs).ToLower()
 let inline digitToInt (c: char) = int c - int '0'
 
+let (++) (x, y) (x', y') = (x + x', y + y')
+
 let rec pairCombos = function
     // aoc18:2
     | [] | [_] -> []

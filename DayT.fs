@@ -16,7 +16,4 @@ let part2 =
     "?"
 
 [<EntryPoint>]
-let main _ =
-    part1 |> printfn "Part 1: %A"
-    part2 |> printfn "Part 2: %A"
-    0
+let main _ = part1 |> printfn "Part 1: %A"; part2 |> printfn "Part 2: %A"; 0

@@ -2,11 +2,14 @@ module Grid
 open System
 
 let nl = Environment.NewLine
+let fchar = function '.' -> " " | c -> c |> string
 
 type Grid<'a>(data: 'a[][]) =
 
     let width = data.[0].Length
     let height = data.Length
+
+    let inbounds (x, y) = (x >= 0 && y >= 0 && x < width && y < height)
 
     member _.Data with get() = data
     member _.Width with get() = width
@@ -20,25 +23,29 @@ type Grid<'a>(data: 'a[][]) =
 
     member this.Get((x, y)) = this.[x, y]
     member this.Set((x, y), v) = this.[x, y] <- v
-
     member _.Row(y) = data.[y] |> Array.copy
-
     member _.Col(x) = data |> Array.map (fun arr -> arr.[x])
 
-    member _.Flatten() = 
+    member _.Flatten() =
         data |> Seq.mapi (fun y row -> (y, row)) |> Seq.collect (fun (y, row) ->
             row |> Seq.mapi (fun x v -> ((x, y), v)))
 
     // nearby
 
     member _.AdjacentUC((x, y)) =
-        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]     
+        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
+        |> List.map(fun (x, y) -> (x, y), data.[y].[x])
+
+    member _.Adjacent((x, y)) =
+        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
+        |> List.filter inbounds
         |> List.map(fun (x, y) -> (x, y), data.[y].[x])
 
     // query
 
     member this.Filter(pred) = this.Flatten () |> Seq.filter (snd >> pred)
-
+    member this.Find(pred) = this.Flatten () |> Seq.find (snd >> pred)
+    member this.TryFind(pred) = this.Flatten () |> Seq.tryFind (snd >> pred)
     member _.Count(pred) = Seq.concat data|> Seq.filter pred |> Seq.length
 
     // display
@@ -53,8 +60,6 @@ type Grid<'a>(data: 'a[][]) =
     override this.ToString() = this.AsText()
 
 // =============================================================================
-
-let fchar = function '.' -> " " | c -> c |> string
 
 module Grid =
 
@@ -79,11 +84,11 @@ module Grid =
     // query
 
     let filter pred (grid: Grid<'a>) = grid.Filter pred
-
+    let find pred (grid: Grid<'a>) = grid.Find pred
+    let tryFind pred (grid: Grid<'a>) = grid.TryFind pred
     let count pred (grid: Grid<'a>) = grid.Count pred
 
     // display
 
     let astext (grid: Grid<'a>) = grid.AsText()
-
     let astextf fmt (grid: Grid<'a>) = grid.AsTextF(fmt)

@@ -1,37 +1,34 @@
-open System
-open System.Text.RegularExpressions
-
-let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
-let inline toChars (str: string) = str.ToCharArray()
-
-let lines = System.IO.File.ReadAllLines("Day08.txt")
-let parse ln = 
-    let flds = Regex.Split(ln, @" ")
+let parse (ln: string) =
+    let flds = ln.Split(' ')
     flds.[0], int flds.[1]
-let input = lines |> Array.map parse
-let len = input.Length
+let game = System.IO.File.ReadAllLines("Day08.txt") |> Array.map parse
+let gameLen = game.Length
 
-let rec apply (program: (string * int)[]) seen acc pos =
-    if Set.contains pos seen || pos >= len then acc, pos else
-    let ins, n = program.[pos]
-    let seen = Set.add pos seen
-    match ins with
-    | "acc" -> apply program seen (acc + n) (pos + 1)
-    | "jmp" -> apply program seen acc (pos + n)
-    | "nop" -> apply program seen acc (pos + 1)
+let run program =
+    let rec run seen acc pos =
+        if Set.contains pos seen || pos >= gameLen then acc, pos else
+        let ins, n = Array.item pos program
+        let seen = Set.add pos seen
+        match ins with
+        | "acc" -> run seen (acc + n) (pos + 1)
+        | "jmp" -> run seen acc (pos + n)
+        | "nop" -> run seen acc (pos + 1)
+    run Set.empty 0 0
 
-let part1 =
-    apply (Array.copy input) Set.empty 0 0 |> fst
+let modGame modPos =
+    let modded = Array.copy game
+    let (oldInst, n) = modded.[modPos]
+    let newInst = match oldInst with "jmp" -> "nop" | "nop" -> "jmp" | i -> i
+    modded.[modPos] <- (newInst, n)
+    modded
 
+let part1 = run (Array.copy game) |> fst
 let part2 =
-    [0 .. len - 1]
-    |> List.map (fun mpos ->
-        let modded = Array.copy input
-        let old, n = modded.[mpos]
-        let newinst = match old with "jmp" -> "nop" | "nop" -> "jmp" | i -> i
-        modded.[mpos] <- newinst, n
-        apply modded Set.empty 0 0)
-    |> List.filter (snd >> ((=) len))
+    [0 .. gameLen - 1]
+    |> List.map (modGame >> run)
+    |> List.filter (snd >> ((=) gameLen))
+    |> List.exactlyOne
+    |> fst
 
 [<EntryPoint>]
 let main _ = printfn "Part 1: %A" part1; printfn "Part 2: %A" part2; 0

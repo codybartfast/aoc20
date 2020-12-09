@@ -4,7 +4,7 @@ open System.Text.RegularExpressions
 let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
 let inline toChars (str: string) = str.ToCharArray()
 
-let lines = System.IO.File.ReadAllLines("Day1.txt")
+let lines = System.IO.File.ReadAllLines("Day10.txt")
 let parse (ln: string) =
     let flds = Regex.Split(ln, @" ")
     flds.[0]

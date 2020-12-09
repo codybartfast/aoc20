@@ -29,4 +29,4 @@ let part1 = findInvalid preamble cipher |> List.pick id
 let part2 () = weakness part1 (preamble@cipher)
 
 [<EntryPoint>]
-let main _ = printfn "Part 1: %d" (part1); printfn "Part 2: %A" (part2 ()); 0
+let main _ = printfn "Part 1: %d" (part1); printfn "Part 2: %d" (part2 ()); 0

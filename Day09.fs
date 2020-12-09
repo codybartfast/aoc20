@@ -1,47 +1,32 @@
-open System
-open System.Text.RegularExpressions
-
 let rec pairCombos = function
     | [] | [_] -> []
-    | head::tail ->
-        List.map (fun e -> (head, e)) tail @ pairCombos tail
+    | head::tail -> List.map (fun e -> (head, e)) tail @ pairCombos tail
 
-let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
-let inline toChars (str: string) = str.ToCharArray()
+let input =
+    System.IO.File.ReadAllLines("Day09.txt") |> Array.map int64 |> Array.toList
+let preamble, cipher = input |> List.splitAt 25
 
-let lines = System.IO.File.ReadAllLines("Day09.txt")
-let parse (ln: string) = int64 ln
-let input = lines |> Array.map parse |> Array.toList
-let poolSize = 25
-let pool, stream = input |> List.take poolSize, input |> List.skip poolSize
-
-let isValid (pool, stream) =
+let invalid pool n =
     pairCombos pool
     |> List.map (fun (a, b) -> a + b)
-    |> (List.contains (List.head stream))
+    |> (List.contains n)
+    |> (function false -> Some n | _ -> None)
 
-let replace _new lst =  (List.tail lst) @ [_new]
+let findInvalid preamble cipher =
+    (preamble, cipher)
+    ||> List.mapFold(fun pool n -> (invalid pool n), List.tail pool @ [n])
+    |> fst
 
-let rec skipValid (pool, stream) =
-    if not (isValid (pool, stream)) then stream else
-    skipValid (replace (List.head stream) pool, List.tail stream) 
-
-let part1 =
-    skipValid (pool, stream)
-    |> List.head
-
-let contiguous target stream =
-    let nums = Array.ofList stream
+let weakness target cipher =
+    let nums = Array.ofList cipher
     let len = nums.Length
-    seq{ for i in 0 .. len - 2 do 
-            for j in i + 1 .. len - 1 do
-                let sum = [i .. j] |> List.sumBy (fun i -> nums.[i])
-                if sum <> target then yield None else
-                let cont = Array.sub nums i (j - i)
-                yield Some (Array.max cont + Array.min cont)}
+    seq { for i in 0 .. len - 2 do for j in i + 1 .. len - 1 do yield (i, j) }
+    |> Seq.map (fun (i, j) -> Array.sub nums i (j - i))
+    |> Seq.find (Array.reduce (+) >> ((=) target))
+    |> (fun contig -> Array.min contig + Array.max contig)
 
-let part2 () = 
-    Seq.pick id (contiguous part1 (pool@stream))
+let part1 = findInvalid preamble cipher |> List.pick id
+let part2 () = weakness part1 (preamble@cipher)
 
 [<EntryPoint>]
 let main _ = printfn "Part 1: %d" (part1); printfn "Part 2: %A" (part2 ()); 0

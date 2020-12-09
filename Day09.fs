@@ -19,7 +19,7 @@ let findInvalid =
 let weakness target =
     pairs input.Length
     |> Seq.map (fun (i, j) -> input.[i..j])
-    |> Seq.find (Array.reduce (+) >> ((=) target))
+    |> Seq.find (Array.sum >> ((=) target))
     |> fun contig -> Array.min contig + Array.max contig
 
 let part1 = findInvalid  |> Array.pick id

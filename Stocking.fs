@@ -12,21 +12,25 @@ let inline digitToInt (c: char) = int c - int '0'
 
 let (++) (x, y) (x', y') = (x + x', y + y')
 
+// aoc20:9
+let pairs len =
+    [| for i in 0..(len - 2) do for j in (i + 1)..(len - 1) do yield i, j |]
+
+// aoc18:2
 let rec pairCombos = function
-    // aoc18:2
     | [] | [_] -> []
     | head::tail -> List.map (fun e -> (head, e)) tail @ pairCombos tail
 
+// aoc20:1
 let cartpower lst n =
-    // aoc20:1
     let rec crtpwr n prd =
         if n = 0 then prd else
         crtpwr (n - 1) (prd |> Seq.collect (fun tpl ->
             lst |> Seq.map (fun e -> e::tpl)))
     crtpwr n (Seq.singleton [])
 
+// aoc15:13
 let rec permutations list =
-    // aoc15:13
     let rec insAlong i list =
         match list with
         | [] -> [[i]]
@@ -35,15 +39,15 @@ let rec permutations list =
     | [] -> [[]]
     | head::tail -> List.collect (insAlong head) (permutations tail)
 
+// aoc16:22
 let adjcrds (x, y) width height =
-    // aoc16:22
     // [(x, y + 1); (x + 1, y + 1); (x + 1, y); (x + 1, y - 1);
     //  (x, y - 1); (x - 1, y - 1); (x - 1, y); (x - 1, y + 1)]
     [(x, y + 1); (x + 1, y); (x, y - 1); (x - 1, y)]
     |> List.filter (fun (x, y) -> 0 <= x && x < width && 0 <= y && y < height
 
+// aoc18:20
 let mapToString (map:Map<(int * int), int64>) =
-    // aoc18:20
     let valueAsChar = function
         | None | Some 0L -> ' '
         | Some 1L -> '█'

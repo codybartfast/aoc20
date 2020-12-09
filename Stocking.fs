@@ -15,8 +15,7 @@ let (++) (x, y) (x', y') = (x + x', y + y')
 let rec pairCombos = function
     // aoc18:2
     | [] | [_] -> []
-    | head::tail ->
-        List.map (fun e -> (head, e)) tail @ pairCombos tail
+    | head::tail -> List.map (fun e -> (head, e)) tail @ pairCombos tail
 
 let cartpower lst n =
     // aoc20:1

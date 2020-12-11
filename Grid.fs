@@ -4,16 +4,36 @@ open System
 let nl = Environment.NewLine
 let fchar = function '.' -> " " | c -> c |> string
 
-type Grid<'a>(data: 'a[][]) =
+type Grid<'a when 'a : equality>(data: 'a[][]) =
 
     let width = data.[0].Length
     let height = data.Length
 
-    let inbounds (x, y) = (x >= 0 && y >= 0 && x < width && y < height)
+    // nearby
+    let (++) (x, y) (x', y') = (x + x', y + y')
+    let inRange (x, y) = (x >= 0 && y >= 0 && x < width && y < height)
+    let vBoadering = [(1, 0); (0, 1); (-1, 0); (0, -1)]
+    let vAdjacent =
+        [(0, -1); (1, -1); (1, 0); (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1)]
+    let mGetUC (x, y) =
+        List.map ((++) (x, y) >> (fun (x, y) -> (x, y), data.[y].[x]))
+    let mGet (x, y) =
+        List.map ((++) (x, y))
+        >> List.filter inRange
+        >> List.map(fun (x, y) -> (x, y), data.[y].[x])
 
     member _.Data with get() = data
     member _.Width with get() = width
     member _.Height with get() = height
+
+    // construction
+
+    member this.Transform<'b  when 'b : equality>
+        (generate: Grid<'a> -> (int * int) -> 'a -> 'b) =
+            data
+            |> Array.mapi(fun y row ->
+                row |> Array.mapi(fun x v -> generate this (x, y) v))
+            |> Grid
 
     // accessors
 
@@ -31,15 +51,11 @@ type Grid<'a>(data: 'a[][]) =
             row |> Seq.mapi (fun x v -> ((x, y), v)))
 
     // nearby
+    member _.Adjacent (x, y) = mGet (x, y) vAdjacent
+    member _.AdjacentUC (x, y) = mGetUC (x, y) vAdjacent
 
-    member _.AdjacentUC((x, y)) =
-        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
-        |> List.map(fun (x, y) -> (x, y), data.[y].[x])
-
-    member _.Adjacent((x, y)) =
-        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
-        |> List.filter inbounds
-        |> List.map(fun (x, y) -> (x, y), data.[y].[x])
+    member _.Bordering (x, y) = mGet (x, y) vBoadering
+    member _.BorderingUC (x, y) = mGetUC (x, y) vBoadering
 
     // query
 
@@ -47,6 +63,7 @@ type Grid<'a>(data: 'a[][]) =
     member this.Find(pred) = this.Flatten () |> Seq.find (snd >> pred)
     member this.TryFind(pred) = this.Flatten () |> Seq.tryFind (snd >> pred)
     member _.Count(pred) = Seq.concat data|> Seq.filter pred |> Seq.length
+    member _.InRange (coord) = inRange coord
 
     // display
 
@@ -58,6 +75,14 @@ type Grid<'a>(data: 'a[][]) =
         this.AsTextF(fun c -> c.ToString())
 
     override this.ToString() = this.AsText()
+
+    // comparison
+    override this.GetHashCode() = 0
+
+    override this.Equals (other) =
+        match other with
+        | :? Grid<'a> as grid -> this.Data = grid.Data
+        | _ -> false
 
 // =============================================================================
 

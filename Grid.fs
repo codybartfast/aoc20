@@ -37,7 +37,9 @@ type Grid<'a>(data: 'a[][]) =
         |> List.map(fun (x, y) -> (x, y), data.[y].[x])
 
     member _.Adjacent((x, y)) =
-        [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
+        // [(x + 1, y); (x, y + 1); (x - 1, y); (x, y - 1)]
+        [(x, y + 1); (x + 1, y + 1); (x + 1, y); (x + 1, y - 1);
+            (x, y - 1); (x - 1, y - 1); (x - 1, y); (x - 1, y + 1)] 
         |> List.filter inbounds
         |> List.map(fun (x, y) -> (x, y), data.[y].[x])
 
@@ -47,6 +49,16 @@ type Grid<'a>(data: 'a[][]) =
     member this.Find(pred) = this.Flatten () |> Seq.find (snd >> pred)
     member this.TryFind(pred) = this.Flatten () |> Seq.tryFind (snd >> pred)
     member _.Count(pred) = Seq.concat data|> Seq.filter pred |> Seq.length
+
+///////////
+
+    member this.Transform<'b  when 'b : equality>
+        (generate: Grid<'a> -> int -> int -> 'b) : Grid<'b> =
+            [| for y in 0 .. (height - 1) do
+                [| for x in 0 .. (width - 1) do
+                    generate this x y |] |]
+            |> Grid<'b>
+
 
     // display
 

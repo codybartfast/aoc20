@@ -4,10 +4,6 @@ type Instr =
     | Forward of int
 type MoveWhat = Ship | Waypoint
 
-let (++) (x, y) (x', y') = (x + x', y + y')
-let scale n (x, y) = (n * x, n * y)
-let dist ((x, y), _) = abs x + abs y
-
 let lines = System.IO.File.ReadAllLines("Day12.txt")
 let parse (ln: string) =
     match ln.[0], int ln.[1..] with
@@ -21,12 +17,16 @@ let parse (ln: string) =
     | 'F', n -> Forward n
 let insts = lines |> Array.map parse |> Array.toList
 
-let sail moveWhat (shp, waypoint) inst =
+let (++) (x, y) (x', y') = (x + x', y + y')
+let scale n (x, y) = (n * x, n * y)
+let dist ((x, y), _) = abs x + abs y
+
+let sail moveWhat (ship, waypoint) inst =
     match moveWhat, inst with
-    | Ship, Move v -> shp ++ v, waypoint
-    | Waypoint, Move v -> shp, waypoint ++ v
-    | _, Turn turn -> shp, turn waypoint
-    | _, Forward n -> (shp ++ (scale n waypoint)), waypoint
+    | Ship, Move v -> ship ++ v, waypoint
+    | Waypoint, Move v -> ship, waypoint ++ v
+    | _, Turn turn -> ship, turn waypoint
+    | _, Forward n -> (ship ++ (scale n waypoint)), waypoint
 
 let part1 () = (((0, 0), (1, 0)), insts) ||> List.fold (sail Ship) |> dist
 let part2 () = (((0, 0), (10, -1)), insts) ||> List.fold (sail Waypoint) |> dist

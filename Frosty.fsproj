@@ -6,6 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Grid.fs"/>
-    <Compile Include="Day12.fs"/>
+    <Compile Include="Day13.fs"/>
   </ItemGroup>
 </Project>

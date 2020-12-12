@@ -12,7 +12,7 @@ type Grid<'a when 'a : equality>(data: 'a[][]) =
     // nearby
     let (++) (x, y) (x', y') = (x + x', y + y')
     let inRange (x, y) = (x >= 0 && y >= 0 && x < width && y < height)
-    let vBoadering = [(1, 0); (0, 1); (-1, 0); (0, -1)]
+    let vBoadering = [(0, -1); (1, 0); (0, 1); (-1, 0)]
     let vAdjacent =
         [(0, -1); (1, -1); (1, 0); (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1)]
     let mGetUC (x, y) =

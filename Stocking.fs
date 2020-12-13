@@ -41,9 +41,9 @@ let rec permutations list =
 
 // aoc16:22
 let adjcrds (x, y) width height =
-    // [(x, y + 1); (x + 1, y + 1); (x + 1, y); (x + 1, y - 1);
-    //  (x, y - 1); (x - 1, y - 1); (x - 1, y); (x - 1, y + 1)]
-    [(x, y + 1); (x + 1, y); (x, y - 1); (x - 1, y)]
+    // [(0, -1); (1, -1); (1, 0); (1, 1); (0, 1); (-1, 1); (-1, 0); (-1, -1)]
+    [(0, -1); (1, 0); (0, 1); (-1, 0)]
+    |> List.map ((++) (x, y))
     |> List.filter (fun (x, y) -> 0 <= x && x < width && 0 <= y && y < height
 
 // aoc18:20

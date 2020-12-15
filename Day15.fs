@@ -5,11 +5,11 @@ let game rounds =
     let seen = Array.zeroCreate rounds
     start.[0..(start.Length - 2)] |> Array.iteri (fun i n -> seen.[n] <- i + 1)
 
-    let rec play prev len =
-        if len = rounds then prev else
-        let next = match seen.[prev] with 0 -> 0 | n -> len - n
-        seen.[prev] <- len
-        play next (len + 1)
+    let rec play spoken round =
+        if round = rounds then spoken else
+        let next = match seen.[spoken] with 0 -> 0 | prev -> round - prev
+        seen.[spoken] <- round
+        play next (round + 1)
     play (Array.last start) start.Length
 
 let part1 () = game 2020

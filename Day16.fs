@@ -17,17 +17,16 @@ let nearby =
     |> Array.map (fun n -> n.Split(',') |> Array.map int)
 let ticket = Regex.Split(blocks.[1], @"\r?\n").[1].Split(',') |> Array.map int64
 
-let valid =
-    rules |> List.map snd |> List.reduce (fun p1 p2 -> (fun n -> p1 n || p2 n))
+let valid n = rules |> List.exists (fun (_, validate) -> validate n)
 let invalid = valid >> not
 
 let part1 () = nearby |> Array.collect id |> Array.filter invalid |> Array.sum
 
 let columns = nearby |> Array.filter (Array.forall valid) |> Array.transpose
 let iColumns = columns  |> Array.mapi (fun i (col: int[]) -> (i, col))
-let validCol pred (i, col) = col |> Array.forall pred
+let validCol validate (i, col) = col |> Array.forall validate
 let allowedCols =
-    rules 
+    rules
     |> List.map (fun (name, pred) ->
         name, iColumns |> Array.filter (validCol pred) |> Array.map fst |> Set)
     |> Map

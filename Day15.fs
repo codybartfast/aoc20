@@ -8,9 +8,13 @@ let play rounds =
     let seen = Array.zeroCreate rounds
     start.[0..(start.Length - 2)] |> Array.iteri (fun i n -> seen.[n] <- i + 1)
     (Array.last start, seq{start.Length..(rounds - 1)}) ||> Seq.fold (next seen)
+let sw = System.Diagnostics.Stopwatch ()
+sw.Start ()
 
 let part1 () = play 2020
-let part2 () = play 30_000_000
+let part2 = play 30_000_000
+sw.Stop ()
+printfn "%A" sw.Elapsed.TotalSeconds
 
 [<EntryPoint>]
-let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
+let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ); 0

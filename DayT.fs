@@ -19,4 +19,11 @@ let part2 () =
     "?"
 
 [<EntryPoint>]
-let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
+// let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
+let main _ = 
+    let sw = System.Diagnostics.Stopwatch ()
+    sw.Start()
+    printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 
+    sw.Stop()
+    printfn "%f" sw.Elapsed.TotalSeconds
+    0

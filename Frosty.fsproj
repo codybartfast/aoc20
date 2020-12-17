@@ -5,7 +5,7 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Grid.fs"/>
-    <Compile Include="Day16.fs"/>
+    <!-- <Compile Include="Grid.fs"/> -->
+    <Compile Include="Day17.fs"/>
   </ItemGroup>
 </Project>

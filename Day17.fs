@@ -35,7 +35,7 @@ let getLookup cubes =
 
 let evolve4D cubes =
     cubes |> cubesNear |> Array.filter (next (getLookup cubes) >> ((=) 1))
-let evolve3D = evolve4D >> Array.filter (fun (_, _, _, z) -> z = mrgn)
+let evolve3D = evolve4D >> Array.filter (fun (_, _, _, w) -> w = mrgn)
 
 let repeat fn n = List.init n (fun _ -> fn) |> List.reduce (>>)
 

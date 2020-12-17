@@ -17,8 +17,10 @@ let start =
 
 let (++) (x, y, z, w) (x', y', z', w') = (x + x', y + y', z + z', w + w')
 
-let adjacentCoords =
-  [ (-1, -1, -1, -1); ( 0, -1, -1, -1); (1, -1, -1, -1);  (-1,  0, -1, -1); ( 0,  0, -1, -1); (1,  0, -1, -1); (-1,  1, -1, -1); ( 0,  1, -1, -1); (1,  1, -1, -1);
+let nhoodCoords =
+  [ (0, 0, 0, 0);
+
+    (-1, -1, -1, -1); ( 0, -1, -1, -1); (1, -1, -1, -1);  (-1,  0, -1, -1); ( 0,  0, -1, -1); (1,  0, -1, -1); (-1,  1, -1, -1); ( 0,  1, -1, -1); (1,  1, -1, -1);
     (-1, -1,  0, -1); ( 0, -1,  0, -1); (1, -1,  0, -1);  (-1,  0,  0, -1); ( 0,  0,  0, -1); (1,  0,  0, -1); (-1,  1,  0, -1); ( 0,  1,  0, -1); (1,  1,  0, -1);
     (-1, -1,  1, -1); ( 0, -1,  1, -1); (1, -1,  1, -1);  (-1,  0,  1, -1); ( 0,  0,  1, -1); (1,  0,  1, -1); (-1,  1,  1, -1); ( 0,  1,  1, -1); (1,  1,  1, -1);
   
@@ -30,14 +32,14 @@ let adjacentCoords =
     (-1, -1,  0,  1); ( 0, -1,  0,  1); (1, -1,  0,  1);  (-1,  0,  0,  1); ( 0,  0,  0,  1); (1,  0,  0,  1); (-1,  1,  0,  1); ( 0,  1,  0,  1); (1,  1,  0,  1);
     (-1, -1,  1,  1); ( 0, -1,  1,  1); (1, -1,  1,  1);  (-1,  0,  1,  1); ( 0,  0,  1,  1); (1,  0,  1,  1); (-1,  1,  1,  1); ( 0,  1,  1,  1); (1,  1,  1,  1) ]
 
-let adjacent coord = adjacentCoords |> List.map ((++) coord)
-let nhood coord =  coord::(adjacentCoords |> List.map ((++) coord))
+let nhood coord =  nhoodCoords |> Seq.map ((++) coord)
+let adjacent  = nhood >> Seq.tail
 
 let region space = space |> Seq.collect nhood |> Seq.distinct
 
 let next (space: Set<Coord>) coord =
     let isActive coord =  space.Contains coord 
-    let count = adjacent coord  |> List.filter isActive |> List.length
+    let count = adjacent coord  |> Seq.filter isActive |> Seq.length
     match isActive coord, count with
     | true, 2 | true, 3 | false, 3 -> Some coord
     | _ -> None
@@ -45,6 +47,7 @@ let next (space: Set<Coord>) coord =
 let generation space = space |> region |> Seq.choose (next space) |> Set
 
 let part1 () =
+    let generation = generation >> Set.filter (function (_, _, _, 0) -> true | _ -> false)
     start 
     |> generation
     |> generation 
@@ -55,8 +58,14 @@ let part1 () =
     |> Set.count
 
 let part2 () =
-    "?"
-
+    start 
+    |> generation
+    |> generation 
+    |> generation
+    |> generation 
+    |> generation
+    |> generation 
+    |> Set.count
 [<EntryPoint>]
 let main _ = 
     let sw = System.Diagnostics.Stopwatch ()

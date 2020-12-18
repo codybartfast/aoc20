@@ -1,7 +1,7 @@
 open System
 open System.Text.RegularExpressions
 
-let inline toChars (str: string) = str.ToCharArray()
+let inline toCharList (str: string) = str.ToCharArray() |> Array.toList
 let lines = System.IO.File.ReadAllLines("Day18.txt")
 
 let rec readNumber digits expr =
@@ -19,12 +19,12 @@ let rec applyOperator acc expr advncd =
     | false, ' '::'*'::' '::rest -> applyToNextNum (*) rest
     | true, ' '::'*'::' '::rest -> (acc * evalExpr advncd rest)
 
-and evalExpr advncd (expr: char list) =
+and evalExpr advncd expr =
     let num, rest = readNumber [] expr
     applyOperator num rest advncd
-let evalStr advncd = toChars >> Array.toList >> (evalExpr advncd)
+let evalStr advncd = toCharList >> (evalExpr advncd)
 
-let rec remParens advncd (expr: string) =
+let rec remParens advncd expr =
     let simplified = Regex.Replace(expr, @"\(([\d +*]+)\)", (fun (m: Match) ->
         m.Groups.[1].Value |> (evalStr advncd) |> string))
     if simplified = expr then simplified else remParens advncd simplified

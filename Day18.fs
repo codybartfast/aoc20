@@ -1,46 +1,36 @@
 open System
 open System.Text.RegularExpressions
-let inline toChars (str: string) = str.ToCharArray()
 
+let inline toChars (str: string) = str.ToCharArray()
 let lines = System.IO.File.ReadAllLines("Day18.txt")
 
-let rec readNumber digits expr  =
+let rec readNumber digits expr =
     match expr with
-    | d::rest when Char.IsNumber d -> readNumber  (d::digits) rest
+    | d::rest when Char.IsNumber d -> readNumber (d::digits) rest
     | _ -> digits |> List.rev |> List.toArray |> String |> int64, expr
 
-let rec applyOperator acc expr = 
-    match expr with
-    | [] -> acc
-    | ' '::'+'::' '::rest ->
-        let v, rest = readNumber [] rest
-        applyOperator (acc + v) rest
-    | ' '::'*'::' '::rest -> (acc * (rest |> List.toArray |> String |> evalStr))
-    
-and evalStr ln =
-    let v, rest = ln |> toChars |> Array.toList |> (readNumber [])
-    applyOperator v rest
+let rec applyOperator acc expr advncd =
+    let applyToNextNum op expr =
+        let v, rest = readNumber [] expr
+        applyOperator (op acc v) rest advncd
+    match advncd, expr with
+    | _, [] -> acc
+    | _, ' '::'+'::' '::rest -> applyToNextNum (+) rest
+    | false, ' '::'*'::' '::rest -> applyToNextNum (*) rest
+    | true, ' '::'*'::' '::rest -> (acc * evalExpr advncd rest)
 
-let rec depParens (str: string) =
-    let simp = Regex.Replace(str, @"\(([\d +*]+)\)", (fun (m: Match) -> 
-        m.Groups.[1].Value |> evalStr |> string))
-    if simp = str then str else depParens simp
+and evalExpr advncd (expr: char list) =
+    let num, rest = readNumber [] expr
+    applyOperator num rest advncd
+let evalStr advncd = toChars >> Array.toList >> (evalExpr advncd)
 
+let rec remParens advncd (expr: string) =
+    let simplified = Regex.Replace(expr, @"\(([\d +*]+)\)", (fun (m: Match) ->
+        m.Groups.[1].Value |> (evalStr advncd) |> string))
+    if simplified = expr then simplified else remParens advncd simplified
 
-let part1 () = 
-    lines |> Array.sumBy (depParens >> evalStr) 
-
-    
-
-let part2 () =
-    "?"
+let part1 () = lines |> Array.sumBy ((remParens false) >> (evalStr false))
+let part2 () = lines |> Array.sumBy ((remParens true) >> (evalStr true))
 
 [<EntryPoint>]
-// let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
-let main _ =
-    let sw = System.Diagnostics.Stopwatch ()
-    sw.Start()
-    printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ());
-    sw.Stop()
-    printfn "%f" sw.Elapsed.TotalSeconds
-    0
+let main _ = printfn "Part 1: %d" (part1 ()); printfn "Part 2: %d" (part2 ()); 0

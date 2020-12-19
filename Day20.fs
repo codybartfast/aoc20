@@ -5,7 +5,7 @@ let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
 let toLines (str: string) = Regex.Split(str.Trim(), @"\r?\n") |> Array.toList
 let inline toChars (str: string) = str.ToCharArray()
 
-let lines = System.IO.File.ReadAllLines("Day2.txt")
+let lines = System.IO.File.ReadAllLines("Day20.txt")
 let parse (ln: string) =
     let flds = Regex.Split(ln, @" ")
     flds.[0]

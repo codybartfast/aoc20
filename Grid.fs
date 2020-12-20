@@ -35,6 +35,15 @@ type Grid<'a when 'a : equality>(data: 'a[][]) =
                 row |> Array.mapi(fun x v -> generate this (x, y) v))
             |> Grid
 
+    member _.Crop((x, y), (width, height)) =
+        data.[y .. (y + height - 1)]
+        |> Array.map (fun row -> row.[x .. (x + width - 1)])
+        |> Grid<'a>
+
+    member _.Rotate() = data |> Array.transpose |> Array.map (Array.rev) |> Grid
+
+    member _.FlipHorizontal() = data |> Array.map (Array.rev) |> Grid
+
     // accessors
 
     member _.Item

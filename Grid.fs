@@ -111,8 +111,13 @@ module Grid =
 
     let initWith width height def = init width  height (fun _ _ -> def)
 
+    let crop crd dimensions (grid: Grid<'a>) = grid.Crop (crd, dimensions)
+
     // accessors
 
+    let get crd (grid: Grid<'a>) = grid.Get crd
+    let row y (grid: Grid<'a>) = grid.Row y
+    let col y (grid: Grid<'a>) = grid.Col y
     let flatten (grid: Grid<'a>) = grid.Flatten ()
 
     // query

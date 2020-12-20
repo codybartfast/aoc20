@@ -35,6 +35,15 @@ type Grid<'a when 'a : equality>(data: 'a[][]) =
                 row |> Array.mapi(fun x v -> generate this (x, y) v))
             |> Grid
 
+    member _.Crop((x, y), (width, height)) =
+        data.[y .. (y + height - 1)]
+        |> Array.map (fun row -> row.[x .. (x + width - 1)])
+        |> Grid<'a>
+
+    member _.Rotate() = data |> Array.transpose |> Array.map (Array.rev) |> Grid
+
+    member _.FlipHorizontal() = data |> Array.map (Array.rev) |> Grid
+
     // accessors
 
     member _.Item
@@ -102,8 +111,13 @@ module Grid =
 
     let initWith width height def = init width  height (fun _ _ -> def)
 
+    let crop crd dimensions (grid: Grid<'a>) = grid.Crop (crd, dimensions)
+
     // accessors
 
+    let get crd (grid: Grid<'a>) = grid.Get crd
+    let row y (grid: Grid<'a>) = grid.Row y
+    let col y (grid: Grid<'a>) = grid.Col y
     let flatten (grid: Grid<'a>) = grid.Flatten ()
 
     // query

@@ -30,8 +30,17 @@ let free = foods |> List.map (fst >> (fun ingrds -> Set.difference ingrds suspec
 
 let part1 () = free |> Seq.sumBy Set.count
 
+let rec  findOne anlys known =
+    if Map.isEmpty anlys then known else
+    let oneFood, oneSet = anlys |> Map.toSeq |> Seq.find (snd >> Set.count >> ((=) 1))
+    let oneAllgn = Seq.exactlyOne oneSet
+    let anlys = anlys.Remove oneFood
+    let anlys = anlys |> Map.map (fun food allgns -> Set.remove oneAllgn allgns)
+    findOne anlys ((oneFood, oneAllgn)::known)
+
 let part2 () =
-    allergens
+    findOne firstpass [] |> List.sortBy fst |> List.map snd |> String.concat ","
+
 
 [<EntryPoint>]
 // let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0

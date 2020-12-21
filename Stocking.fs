@@ -1,8 +1,14 @@
 module Stocking
 
 open System
+open System.Text.RegularExpressions
 
 let nl = Environment.NewLine
+
+// parsing
+let captures (m: Match) (cpt: string) =
+    m.Groups.[cpt].Captures |> Seq.map (fun c -> c.Value) |> Seq.toList
+let parensPtn = @"\((?>\((?<DEPTH>)|\)(?<-DEPTH>)|[^()]+)*\)(?(DEPTH)(?!))"
 
 // strings, chars, hex
 let inline toChars (str: string) = str.ToCharArray()

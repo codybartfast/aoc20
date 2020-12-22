@@ -4,60 +4,48 @@ open System
 open System.Text.RegularExpressions
 open Ring
 
-type Deck = Cards of Ring.Link<int64> | Empty
 type Players = Player1 | Player2
-
-let remove (Cards link) =
-    if link.Next.Item = link.Item then Empty else
-    link.Prev.Next <- link.Next
-    link.Next.Prev <- link.Prev
-    Cards link.Next
 
 let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
 let toLines (str: string) = Regex.Split(str.Trim(), @"\r?\n") |> Array.toList
 let inline toChars (str: string) = str.ToCharArray()
 
-let toDeck cards =
-    // if List.isEmpty cards then Empty else
-    (Ring.singleton (List.head cards), cards.Tail)
-    ||> List.fold (fun ring card -> Ring.insert card ring)
-    |> (Ring.advance 1)
-    |> Cards
+let toDeck = Ring.ofList
 
 let blocks = System.IO.File.ReadAllText("Day22.txt") |> toBlocks
 let cards txt = txt |> toLines |> List.tail |> List.map int64
 let [| cards1; cards2 |] = blocks |> Array.map cards    
 
-let move (Cards cards1) (Cards cards2) =
+let move cards1 cards2 =
     let card = Ring.item cards1
-    remove (Cards cards1), Cards (Ring.insert card cards2 |> Ring.advance 1)
+    Ring.remove cards1, Ring.insert card cards2 |> Ring.advance 1
 
-let simpRound ((Cards cards1), (Cards carsd2)) =
+let simpRound ((Ring cards1), (Ring carsd2)) =
     let c1, c2 = cards1.Item, carsd2.Item
     if c1 = c2 then failwith "oops"
     if c1 > c2 then 
-        let d2, d1 = move (Cards carsd2) (Cards cards1)
+        let d2, d1 = move (Ring carsd2) (Ring cards1)
         d1, d2
     else 
-        move (Cards cards1) (Cards carsd2)
+        move (Ring cards1) (Ring carsd2)
 
 let rec simpPlay (deck1, deck2) =
     // printfn "%A - %A" deck1 deck2
     match deck1, deck2 with
-    | Empty, _ -> deck2
-    | _, Empty -> deck1
-    | _ ->
-        simpRound (deck1, deck2) |> simpPlay
+    | EmptyRing, _ -> deck2
+    | _, EmptyRing -> deck1
+    | _ -> simpRound (deck1, deck2) |> simpPlay
 
-let rec score (Cards cards) =
-    Ring.toList cards
-    |> List.rev
-    |> List.mapi (fun i card -> (i + 1 |> int64) * card)
-    |> List.sum
+let rec score deck =
+    match Ring.toList deck with
+    | [] -> 0L
+    | lst -> 
+        lst 
+        |> List.rev 
+        |> List.mapi (fun i card -> (i + 1 |> int64) * card)
+        |> List.sum
     
 let part1 () = simpPlay (toDeck cards1, toDeck cards2) |> score
-
-let uncrap = function Empty -> [] | Cards cards -> Ring.toList cards
 
 let prity (lst: int64 list)  = lst |> List.map string |> String.concat ", "
 
@@ -91,11 +79,10 @@ and topRound gid cards1 cards2 gameHist history =
             deck1, deck2
         | Player2 -> move (toDeck cards1) (toDeck cards2)
     match deck1, deck2 with
-    | Empty, _ -> Player2, (uncrap deck2), gameHist
-    | _, Empty -> Player1, (uncrap deck1), gameHist
+    | EmptyRing, _ -> Player2, (Ring.toList deck2), gameHist
+    | _, EmptyRing -> Player1, (Ring.toList deck1), gameHist
     |_ ->    
-    topRound gid (uncrap deck1) (uncrap deck2) gameHist history
-    
+    topRound gid (Ring.toList deck1) (Ring.toList deck2) gameHist history
 
 let game cards1 cards2 = 
     topRound (gameId ()) cards1 cards2 Set.empty Set.empty
@@ -104,13 +91,12 @@ let part2 () =
     let _, cards, _ = game cards1 cards2
     score (toDeck cards)
     
-
 [<EntryPoint>]
 // let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
 let main _ =
     let sw = System.Diagnostics.Stopwatch ()
     sw.Start()
-    printfn "Part 1: %d" (part1 ()); printfn "Part 2: %d" (part2 ());
+    printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ());
     sw.Stop()
     printfn "%f" sw.Elapsed.TotalSeconds
     0

@@ -15,6 +15,7 @@ let inline toChars (str: string) = str.ToCharArray()
 let inline encode (str: string) = System.Text.Encoding.ASCII.GetBytes(str)
 let inline toHex (bs: byte[]) = Convert.ToHexString(bs).ToLower()
 let inline digitToInt (c: char) = int c - int '0'
+let inline intToDigit (d: int) = int '0' + d |> char
 
 let (++) (x, y) (x', y') = (x + x', y + y')
 

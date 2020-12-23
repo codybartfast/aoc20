@@ -1,86 +1,55 @@
 open System
-open System.Text.RegularExpressions
 open Ring
 
-
-let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
-let toLines (str: string) = Regex.Split(str.Trim(), @"\r?\n") |> Array.toList
 let inline toChars (str: string) = str.ToCharArray()
 let inline digitToInt (c: char) = int c - int '0'
+let inline intToDigit (d: int) = int '0' + d |> char
 
-let input =
+let seed =
     System.IO.File.ReadAllLines("Day23.txt").[0]
     |> toChars |> Array.map digitToInt |> Array.toList
-let inputLen = input.Length
+let labels size = seed @ [seed.Length + 1 .. size]
 
-let start () = input |> Ring.ofList
-let sorted = input |> List.sortDescending |> Ring.ofList
-let ringArr = start () |> Ring.toLinks |> List.toArray
+let getShell shellArr v =
+    let index =
+        if v <= seed.Length then List.findIndex ((=) v) seed else (v - 1)
+    Array.item index shellArr
 
-let getIndex n =
-    if n <= inputLen then List.findIndex ((=) n) input else n
+let removeAfter shell =
+    let rmvd = shell.Next
+    let joinTo = rmvd.Next.Next.Next
+    shell.Next <- joinTo; joinTo.Prev <- shell; rmvd
 
-let remove game =
-    let rec remove n rmvd game =
-        if n = 0 then game, List.rev rmvd else
-        let trgt = Ring.item game
-        match Ring.remove game with
-        | EmptyRing -> failwith "oops"
-        | game -> remove (n - 1) (trgt::rmvd) game
-    let game = Ring.next game
-    let game, rmvd = remove 3 [] game
-    (Ring.prev game, rmvd)
+let getDestination shellArr shell rmvd =
+    let inline next n = if n = 1 then Array.length shellArr else n - 1
+    let rec checkDest n = if List.contains n rmvd then checkDest (next n) else n
+    let dest = checkDest (Ring.item shell |> next)
+    getShell shellArr dest
 
-let gotoValue value =
-    Ring (ringArr.[getIndex value])
+let rec insertAfter shell rmvd =
+    let joinTo = shell.Next
+    shell.Next <- rmvd; rmvd.Prev <- shell;
+    rmvd.Next.Next.Next <- joinTo; joinTo.Prev <- rmvd.Next.Next
 
-let goDestination max game rmvd =
-    let rec destination n =
-        let n = if n = 0 then max else n
-        if List.contains n rmvd then
-            destination (n - 1)
-        else
-            n
-    let dest = destination (Ring.item game - 1)
-    gotoValue dest
+let round shellArr shell =
+    let rmvd = removeAfter shell
+    let rmvdVals = [rmvd.Item; rmvd.Next.Item; rmvd.Next.Next.Item]
+    insertAfter (getDestination shellArr shell rmvdVals) rmvd
+    shell |> Ring.next
 
-let rec insert game rmvd =
-    (game, rmvd) ||> List.fold (fun g r -> Ring.insert r g)
-
-let move size game =
-    printfn "move game length: %A" (game |> Ring.toList |> List.length)
-    let game, rmvd = remove game
-    let crnt = Ring.item game
-    let game = goDestination size game rmvd
-    let game = insert game rmvd
-    (gotoValue crnt) |> Ring.next
-
-let rec play size n game =
-    // if n % 1 = 0 then printfn "remaining: %d" n
-    if n = 0 then game else play size (n - 1) (move size game)
-
-let final game =
-    game
-    |> Ring.find 1 |> Ring.toList |> List.tail  |> List.map (fun c -> c.ToString() ) |>  String.concat ""
+let play size rounds =
+    let start = (labels size) |> Ring.ofList
+    let shellArr = start |> Ring.toLinks |> List.toArray
+    (start, seq{1 .. rounds}) ||> Seq.fold (fun game _ -> round shellArr game)
+    getShell shellArr 1
 
 let part1 () =
-    printfn "started"
-    play input.Length 100 (start ()) |> final
-
-let bigstart =
-    let fillStart = List.max input + 1
-    let fillEnd = fillStart + (1_000_000 - input.Length) - 1
-    input @ [fillStart .. fillEnd] |> Ring.ofList
+    play seed.Length 100 |> Ring.toList |> List.tail
+    |> List.map intToDigit  |> List.toArray |> String |> int
 
 let part2 () =
-    "" //gotoValue 9
+    let shell1 = play 1_000_000 10_000_000
+    (int64 shell1.Next.Item) * (int64 shell1.Next.Next.Item)
 
 [<EntryPoint>]
-// let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0
-let main _ =
-    let sw = System.Diagnostics.Stopwatch ()
-    sw.Start()
-    printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ());
-    sw.Stop()
-    printfn "%f" sw.Elapsed.TotalSeconds
-    0
+let main _ = printfn "Part 1: %d" (part1 ()); printfn "Part 2: %d" (part2 ()); 0

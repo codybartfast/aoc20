@@ -49,6 +49,8 @@ module Ring =
         | ring -> if n = 0 then ring else reverse (n - 1) (prev ring)
     let rec find value ring =
         if value = item ring then ring else find value (next ring)
+    let rec findBack value ring =
+        if value = item ring then ring else find value (prev ring)
 
     let ofList =
         let rec ofList rng = function
@@ -61,4 +63,12 @@ module Ring =
             let rec toList link lst =
                 if refEq start link then (link.Item::lst) else
                 toList link.Prev (link.Item::lst)
+            toList start.Prev []
+
+    let toLinks = function
+        | EmptyRing -> []
+        | Ring start ->
+            let rec toList link lst =
+                if refEq start link then (link::lst) else
+                toList link.Prev (link::lst)
             toList start.Prev []

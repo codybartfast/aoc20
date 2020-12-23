@@ -6,6 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Ring.fs"/>
-    <Compile Include="Day22.fs"/>
+    <Compile Include="Day23.fs"/>
   </ItemGroup>
 </Project>

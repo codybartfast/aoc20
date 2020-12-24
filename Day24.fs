@@ -1,11 +1,7 @@
-open System
 open System.Text.RegularExpressions
 
 let (++) (x, y) (x', y') = (x + x', y + y')
-
-let toBlocks (str: string) = Regex.Split(str.Trim(), @"(?:\r?\n){2,}")
-let toLines (str: string) = Regex.Split(str.Trim(), @"\r?\n") |> Array.toList
-let inline toChars (str: string) = str.ToCharArray()
+let repeat fn n = List.init n (fun _ -> fn) |> List.reduce (>>)
 
 let e, se, sw, w, nw, ne = (2, 0), (1 ,1),(-1, 1), (-2, 0), (-1, -1), (1, -1)
 let dirs = [e; se; sw; w; nw; ne]
@@ -17,10 +13,8 @@ let parse (ln: string) =
     |> List.map (function
         | "e" -> e | "se" -> se | "sw" -> sw
         | "w" -> w | "nw" -> nw | "ne" -> ne)
-let tile path =
-    ((0, 0), path) ||> List.fold (++)
+let pathEnd path = ((0, 0), path) ||> List.fold (++)
 let paths = lines |> Array.map parse |> Array.toList
-let isBlack n = n % 2 = 1
 
 let flip floor crd = 
     let tile = 
@@ -28,15 +22,35 @@ let flip floor crd =
         | None | Some false -> true
         | Some true -> false
     floor.Add (crd, tile)
+let flipPath floor path = flip floor (pathEnd path)
+let countBlack = Map.toSeq >> Seq.filter snd >> Seq.length
 
-let flipPath floor path = flip floor (tile path)
-
-let part1 () =
-    (Map.empty, paths) ||> List.fold flipPath 
-    |> Map.toSeq |> Seq.filter snd |> Seq.length
+let floor0 =  (Map.empty, paths) ||> List.fold flipPath 
+let part1 () = floor0 |> countBlack
         
-let part2 () =
-    "?"
+let isBlack floor crd =
+    match Map.tryFind crd floor with
+    | None | Some false -> false
+    | _ -> true        
+
+let nhood floor =
+    let inline neighbours crd = Seq.map ((++) crd) dirs
+    floor
+    |> Map.toSeq 
+    |> Seq.collect (fun (crd, _) -> neighbours crd)
+    |> Seq.distinct
+ 
+let inline next floor crd =
+    let bnext = dirs |> List.filter ((++) crd >> (isBlack floor)) |> List.length
+    let col =
+        match isBlack floor crd, bnext with
+        | true, 1| true, 2 | false, 2 -> true | _ -> false
+    crd, col
+
+let evolve floor = floor |> nhood |> Seq.map (next floor) |> Map
+
+let part2 () = floor0 |> (repeat evolve 100) |> countBlack
+        
 
 [<EntryPoint>]
 // let main _ = printfn "Part 1: %A" (part1 ()); printfn "Part 2: %A" (part2 ()); 0

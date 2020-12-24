@@ -18,6 +18,7 @@ let inline digitToInt (c: char) = int c - int '0'
 let inline intToDigit (d: int) = int '0' + d |> char
 
 let (++) (x, y) (x', y') = (x + x', y + y')
+let repeat fn n = List.init n (fun _ -> fn) |> List.reduce (>>)
 
 // aoc20:9
 let pairs len =

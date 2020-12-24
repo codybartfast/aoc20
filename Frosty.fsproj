@@ -5,7 +5,7 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Ring.fs"/>
-    <Compile Include="Day23.fs"/>
+    <!-- <Compile Include="Ring.fs"/> -->
+    <Compile Include="Day24.fs"/>
   </ItemGroup>
 </Project>

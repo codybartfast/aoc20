@@ -6,15 +6,23 @@ let toLines (str: string) = Regex.Split(str.Trim(), @"\r?\n") |> Array.toList
 let inline toChars (str: string) = str.ToCharArray()
 
 let lines = System.IO.File.ReadAllLines("Day25.txt")
-let parse (ln: string) =
-    let flds = Regex.Split(ln, @" ")
-    flds.[0]
-let input = lines |> Array.map parse |> Array.toList
+let cardPub = int64 lines.[0]
+let doorPub = int64 lines.[1]
+
+let next p subj = (p * subj) % 20201227L
+
+let search pub =
+    printfn "Searching for %d" pub
+    let rec loop l p =
+        let r = next p 7L
+        if r = pub then l else loop (l + 1L) r
+    loop 1L 1L
 
 
 
 let part1 () =
-    input
+    let cardLoop, doorLoop = search cardPub, search doorPub
+    (cardPub, seq{2L .. doorLoop}) ||> Seq.fold (fun p _ -> next p cardPub)
 
 let part2 () =
     "?"
